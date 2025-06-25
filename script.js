@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
   // Modal elements
   const modal = document.getElementById('cert-modal');
+  if (!modal) return;
   const modalImg = modal.querySelector('.cert-modal-img');
   const modalTitle = modal.querySelector('.cert-modal-title');
   const modalDesc = modal.querySelector('.cert-modal-desc');
@@ -245,73 +246,113 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Open modal on "Ver mais"
   document.querySelectorAll('.cert-read-more').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
       e.stopPropagation();
-      const img = btn.getAttribute('data-img');
-      const title = btn.getAttribute('data-title');
-      const desc = btn.getAttribute('data-desc');
-      const link = btn.getAttribute('data-link');
-      modalImg.src = img;
-      modalImg.alt = title;
-      modalTitle.textContent = title;
-      modalDesc.textContent = desc;
-      if (link) {
-        modalLink.href = link;
-        modalLink.style.display = 'inline-flex';
-      } else {
-        modalLink.style.display = 'none';
+      // fallback: pega o overlay pai se não encontrar os atributos
+      let img = btn.getAttribute('data-img');
+      let title = btn.getAttribute('data-title');
+      let desc = btn.getAttribute('data-desc');
+      let link = btn.getAttribute('data-link');
+      // fallback para pegar do DOM se não vier nos atributos
+      if (!img || !title || !desc) {
+        const overlay = btn.closest('.cert-overlay');
+        if (overlay) {
+          const card = overlay.closest('.certification-card');
+          if (card) {
+            const imgEl = card.querySelector('img');
+            const titleEl = card.querySelector('.cert-title');
+            const descEl = overlay.querySelector('.cert-desc');
+            img = img || (imgEl ? imgEl.src : '');
+            title = title || (titleEl ? titleEl.textContent : '');
+            desc = desc || (descEl ? descEl.textContent : '');
+          }
+        }
+      }
+      if (modalImg) {
+        modalImg.src = img || '';
+        modalImg.alt = title || '';
+      }
+      if (modalTitle) modalTitle.textContent = title || '';
+      if (modalDesc) modalDesc.textContent = desc || '';
+      if (modalLink) {
+        if (link) {
+          modalLink.href = link;
+          modalLink.style.display = 'inline-flex';
+        } else {
+          modalLink.style.display = 'none';
+        }
       }
       modal.classList.add('active');
     });
   });
 
   // Close modal on X or outside
-  modalClose.addEventListener('click', () => modal.classList.remove('active'));
+  if (modalClose) {
+    modalClose.addEventListener('click', () => modal.classList.remove('active'));
+  }
   modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.classList.remove('active');
   });
 });
 
-// Certificações Carousel
+// Certificações Carousel (robusto para DOM dinâmico)
 document.addEventListener('DOMContentLoaded', () => {
   const grid = document.querySelector('.certifications-grid');
-  const cards = Array.from(grid.children);
   const prevBtn = document.querySelector('.cert-prev-btn');
   const nextBtn = document.querySelector('.cert-next-btn');
+  if (!grid || !prevBtn || !nextBtn) return;
+
   let current = 0;
-  const visibleCount = () => {
-    // Quantos cards cabem na tela (ajuste responsivo)
+
+  function getCardWidth() {
+    const card = grid.querySelector('.certification-card');
+    if (!card) return 0;
+    const style = window.getComputedStyle(grid);
+    let gap = 0;
+    if (style.gap) gap = parseInt(style.gap) || 0;
+    else gap = 16;
+    return card.offsetWidth + gap;
+  }
+
+  function visibleCount() {
     const gridWidth = grid.parentElement.offsetWidth;
-    const cardWidth = cards[0].offsetWidth + parseInt(getComputedStyle(grid).gap) || 0;
+    const cardWidth = getCardWidth();
+    if (!cardWidth) return 1;
     return Math.max(1, Math.floor(gridWidth / cardWidth));
-  };
+  }
+
+  function maxIndex() {
+    const total = grid.children.length;
+    const visible = visibleCount();
+    return Math.max(0, total - visible);
+  }
 
   function updateCarousel() {
-    const count = visibleCount();
-    const maxIndex = cards.length - count;
-    let idx = current;
-    if (idx < 0) idx = cards.length - count;
-    if (idx > maxIndex) idx = 0;
-    current = idx;
-    const cardWidth = cards[0].offsetWidth + parseInt(getComputedStyle(grid).gap) || 0;
+    const cardWidth = getCardWidth();
+    const max = maxIndex();
+    if (current < 0) current = max;
+    if (current > max) current = 0;
     grid.style.transform = `translateX(-${cardWidth * current}px)`;
   }
 
-  prevBtn.addEventListener('click', () => {
+  prevBtn.addEventListener('click', function (e) {
+    e.preventDefault();
     current--;
     updateCarousel();
   });
 
-  nextBtn.addEventListener('click', () => {
+  nextBtn.addEventListener('click', function (e) {
+    e.preventDefault();
     current++;
     updateCarousel();
   });
 
-  // Atualiza ao redimensionar
   window.addEventListener('resize', updateCarousel);
 
-  // Inicializa
-  setTimeout(updateCarousel, 100);
+  // Inicialização segura
+  setTimeout(updateCarousel, 300);
+  window.addEventListener('load', updateCarousel);
 });
 
 // Modal para portfólio (igual ao certificado)
@@ -346,6 +387,25 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       modal.classList.add('active');
     });
+  });
+});
+
+// Truncar texto do hover dos projetos e mostrar "Ver mais" se > 20 caracteres
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.portfolio-image .cert-overlay, .portfolio-cert-card .portfolio-image .cert-overlay').forEach(overlay => {
+    const descSpan = overlay.querySelector('.cert-desc');
+    const readMoreBtn = overlay.querySelector('.cert-read-more');
+    if (descSpan) {
+      const fullText = descSpan.getAttribute('data-full') || descSpan.textContent.trim();
+      if (fullText.length > 20) {
+        descSpan.setAttribute('data-full', fullText);
+        descSpan.textContent = fullText.slice(0, 20) + '...';
+        if (readMoreBtn) readMoreBtn.style.display = 'inline-block';
+      } else {
+        descSpan.textContent = fullText;
+        if (readMoreBtn) readMoreBtn.style.display = 'none';
+      }
+    }
   });
 });
 
