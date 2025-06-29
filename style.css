@@ -91,6 +91,14 @@ img {
   display: block;
 }
 
+.cert-modal-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover; /* Altere de 'contain' para 'cover' para preencher e curvar corretamente */
+  display: block;
+  /* Remova margin-bottom se estiver causando corte visual */
+}
+
 /* Containers e Layout Geral */
 .container {
   max-width: 1200px;
@@ -480,29 +488,44 @@ img {
   display: flex;
   align-items: center;
   width: 100%;
+  flex-direction: row;
+  /* Garante horizontalidade sempre */
 }
 
 .certifications-carousel {
   flex-grow: 1;
-  overflow-x: hidden; /* Esconde a barra de rolagem mas permite o controle JS */
-  padding-bottom: var(--space-4); /* Espaço para sombra do carrossel */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: var(--space-4);
+  /* Permite arrastar no mobile */
+}
+
+.certifications-carousel::-webkit-scrollbar {
+  display: none;
 }
 
 .certifications-grid {
-  display: flex; /* Muda para flex para o carrossel */
+  display: flex;
+  flex-direction: row;
   gap: var(--space-6);
-  padding: var(--space-2); /* Padding para sombra */
-  transition: transform 0.5s ease-in-out; /* Adiciona transição para o scroll */
+  padding: var(--space-2);
+  transition: transform 0.5s ease-in-out;
+  flex-wrap: nowrap;
+  min-width: max-content;
+  scroll-snap-type: x mandatory;
 }
 
 .certification-card {
-  flex: 0 0 auto; /* Não cresce, não encolhe, base é auto */
-  width: 300px; /* Largura fixa para cada card no carrossel */
+  flex: 0 0 auto;
+  width: 300px;
   background-color: var(--gray-800);
   border-radius: var(--rounded-lg);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  scroll-snap-align: start;
 }
 
 .certification-card:hover {
@@ -544,7 +567,7 @@ img {
   transition: opacity 0.3s ease;
   padding: var(--space-4);
   text-align: center;
-  /* Removido border-radius para desktop */
+  
 }
 
 .cert-image-hover:hover .cert-overlay {
@@ -646,6 +669,23 @@ img {
   transform: scale(1.1);
 }
 
+/* Esconde os botões de navegação em tablet/mobile */
+@media (max-width: 1024px) {
+  .cert-carousel-btn {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .cert-carousel-btn {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .cert-carousel-btn {
+    display: none;
+  }
+}
+
 /* Portfolio Section */
 .portfolio-main-filters {
   display: flex;
@@ -653,6 +693,7 @@ img {
   gap: var(--space-4);
   margin-bottom: var(--space-10);
   flex-wrap: wrap; /* Permite quebrar linha em telas menores */
+  width: auto;
 }
 
 .main-filter-btn {
@@ -668,18 +709,34 @@ img {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  width: auto !important;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 0.9rem;
+  padding: var(--space-1) var(--space-2);
+  margin: var(--space-1) 0;
+  border-radius: var(--rounded-md);
+  justify-content: center;
+  text-align: center;
+  display: inline-flex;
+  white-space: normal;
+  word-break: break-word;
+  overflow: hidden;
 }
 
 .main-filter-btn:hover {
   background-color: var(--primary-color);
   color: var(--offwhite);
   transform: translateY(-2px);
+  width: auto;
+  
 }
 
 .main-filter-btn.active {
   background-color: var(--primary-color);
   color: var(--offwhite);
   box-shadow: var(--shadow-md);
+  width: auto;
 }
 
 .portfolio-category {
@@ -770,6 +827,9 @@ img {
   width: 100%;
   height: 220px; /* Ajuste a altura para imagens do portfólio */
   overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
 }
 
 /* O overlay e botões "Ver mais" são os mesmos das certificações, podem ser reutilizados */
@@ -930,24 +990,36 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  gap: 0;
+  padding: 0;
 }
 
 .footer-links {
-  display: flex;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-  justify-content: center;
+  display: none !important;
 }
 
-.footer-links a {
-  color: var(--gray-300);
-  font-weight: 500;
-  font-size: 1rem;
+.footer-signature {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #555555;
+  margin: 0;
+  padding: var(--space-4) 0;
+  letter-spacing: 0.02em;
 }
-
-.footer-links a:hover {
-  color: var(--primary-color);
+.heart-pulse {
+  color: #a78bfa;
+  display: inline-block;
+  animation: heart-pulse 1s infinite;
+  font-size: 1.2em;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+@keyframes heart-pulse {
+  0%, 100% { transform: scale(1); }
+  10% { transform: scale(1.15); }
+  20% { transform: scale(1.25); }
+  30% { transform: scale(1.15); }
+  40% { transform: scale(1); }
 }
 
 /* Modal Certificado Ampliado */
@@ -1000,9 +1072,9 @@ img {
 .cert-modal-img {
   width: 100%;
   max-height: 200px; /* Reduzido para mais compacto (200px) */
-  object-fit: contain; /* Garante que a imagem inteira seja visível */
-  border-radius: var(--rounded-md);
-  margin-bottom: var(--space-1); /* Espaçamento ajustado (4px) */
+  object-fit: cover; /* Altere de 'contain' para 'cover' para preencher e curvar corretamente */
+  display: block;
+  
 }
 
 .cert-modal-info {
@@ -1127,7 +1199,7 @@ img {
   }
 
   .certification-card {
-    width: 280px;
+    width: 260px;
   }
 
   .contact-content {
@@ -1177,17 +1249,9 @@ img {
     z-index: 1001; /* Fica acima do menu */
   }
 
+  /* Esconde o botão flutuante de redes sociais no mobile */
   .social-floating {
-    top: unset;
-    bottom: var(--space-8);
-    right: var(--space-4);
-    transform: none;
-    flex-direction: row;
-    gap: var(--space-2);
-    background-color: var(--gray-700);
-    padding: var(--space-2);
-    border-radius: var(--rounded-full);
-    box-shadow: var(--shadow-lg);
+    display: none !important;
   }
 
   .social-float-link {
@@ -1241,8 +1305,9 @@ img {
     flex-direction: column; /* Botões acima/abaixo do carrossel */
   }
 
+  /* Esconde os botões de navegação em mobile */
   .cert-carousel-btn {
-    margin: var(--space-4) auto; /* Centraliza botões do carrossel */
+    display: none;
   }
 
   .certifications-grid {
@@ -1251,14 +1316,28 @@ img {
 
   .portfolio-main-filters,
   .subcategory-filters {
-    flex-direction: column;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
+    gap: var(--space-2);
   }
 
   .main-filter-btn,
   .subcategory-btn {
-    width: 80%; /* Botões maiores para mobile */
-    max-width: 300px;
+    width: auto !important;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 0.9rem;
+    padding: var(--space-1) var(--space-2);
+    margin: var(--space-1) 0;
+    border-radius: var(--rounded-md);
+    justify-content: center;
+    text-align: center;
+    display: inline-flex;
+    white-space: normal;
+    word-break: break-word;
+    overflow: hidden;
   }
 
   .contact-info, .contact-form {
@@ -1277,7 +1356,6 @@ img {
   .cert-image,
   .portfolio-image {
     height: 160px; /* Fixed image height for mobile cards */
-    border-radius: var(--rounded-lg) var(--rounded-lg) 0 0; /* Only top corners rounded */
     overflow: hidden; /* Ensure image fits */
   }
 
@@ -1291,7 +1369,6 @@ img {
     background-color: var(--gray-800); /* Background for the content area */
     padding: var(--space-4); /* Increased padding for more breathing room */
     text-align: center;
-    border-radius: 0 0 var(--rounded-lg) var(--rounded-lg); /* Only bottom corners rounded */
     height: auto; /* Height adjusts to content */
     display: flex; /* Flex for description and button */
     flex-direction: column;
@@ -1337,7 +1414,7 @@ img {
     font-size: 0.75rem; /* Slightly reduced for compactness */
     margin-bottom: var(--space-3); /* Adjusted */
   }
-  .cert-info .cert-icon {
+  .cert_info .cert-icon {
     font-size: 1.6rem; /* Slightly reduced */
     margin-bottom: var(--space-2);
   }
@@ -1375,7 +1452,7 @@ img {
     .cert-modal-title {
       font-size: 1.3rem; /* Título um pouco maior em paisagem */
     }
-    .cert-modal-desc {
+    .cert-modal_desc {
       font-size: 0.9rem; /* Descrição um pouco maior em paisagem */
     }
   }
@@ -1502,7 +1579,7 @@ img {
     height: 110px; /* Altura fixa para visual estilo Instagram */
     border-radius: 0;
   }
-  .portfolio-card .cert-info,
+  .portfolio_card .cert-info,
   .certification-card .cert-info {
     display: none; /* Esconde info abaixo da imagem no grid estilo Instagram */
   }
@@ -1548,7 +1625,7 @@ img {
     background: var(--gray-700);
     box-sizing: border-box;
   }
-  .portfolio-card .cert-info,
+  .portfolio_card .cert-info,
   .certification-card .cert-info {
     display: none;
   }
@@ -1662,10 +1739,420 @@ img {
   transition: all 0.3s ease-in-out;
 }
   
-  .portfolio-card .cert-info,
-  .certification-card .cert-info {
-    display: none; /* Esconde info abaixo da imagem no grid estilo Instagram */
+.cert-image,
+.portfolio-image {
+  position: relative;
+  width: 100%;
+  height: 220px; /* Mantém o tamanho do container anterior */
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  /* Neon border effect */
+  border: 2px solid #a78bfa;
+  box-shadow: 0 0 0 2px #a78bfa, 0 0 12px 2px #a78bfa, 0 0 24px 4px #7c3aed;
+  border-radius: var(--rounded-lg);
+  background: #18181b;
+}
+
+.cert-image img,
+.portfolio-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border: none;
+  box-shadow: none;
+  /* Remove background/border from img itself, border is on container */
+}
+
+/* Remove border-radius das imagens dos certificados e portfolio */
+.cert-image img,
+.portfolio-image img {
+  border-radius: 0 !important;
+}
+
+@media (max-width: 768px) {
+ 
+  .cert-image,
+  .portfolio-image {
+    height: 160px;
+    min-height: 120px;
+    max-height: 220px;
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    overflow: hidden;
+    border: 2px solid #a78bfa;
+    box-shadow: 0 0 0 2px #a78bfa, 0 0 12px 2px #a78bfa, 0 0 24px 4px #7c3aed;
+    border-radius: var(--rounded-lg) var(--rounded-lg) 0 0;
+    background: #18181b;
   }
+
+  .cert-image img,
+  .portfolio-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    border: none;
+    box-shadow: none;
+  }
+
+
+
+@media (max-width: 480px) {
+  
+  .cert-image,
+  .portfolio-image {
+    height: 100px;
+    min-height: 80px;
+    max-height: 120px;
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    overflow: hidden;
+    border: 2px solid #a78bfa;
+    box-shadow: 0 0 0 2px #a78bfa, 0 0 12px 2px #a78bfa, 0 0 24px 4px #7c3aed;
+    border-radius: var(--rounded-sm);
+    background: #18181b;
+  }
+
+  .cert-image img,
+  .portfolio-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    border: none;
+    box-shadow: none;
+  }
+
+  
+  .hero-buttons {
+    justify-content: center; /* Centraliza botões */
+  }
+
+  .hero-image-wrapper {
+    max-width: 250px; /* Reduz o tamanho da imagem no mobile */
+    margin-bottom: var(--space-8);
+  }
+
+  .section-title {
+    font-size: 2.2rem;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+  }
+
+  .certifications-carousel-container {
+    flex-direction: column; /* Botões acima/abaixo do carrossel */
+  }
+
+  /* Esconde os botões de navegação em mobile */
+  .cert-carousel-btn {
+    display: none;
+  }
+
+  .certifications-grid {
+    justify-content: center;
+  }
+
+  .portfolio-main-filters,
+  .subcategory-filters {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .main-filter-btn,
+  .subcategory-btn {
+    width: auto !important;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 0.9rem;
+    padding: var(--space-1) var(--space-2);
+    margin: var(--space-1) 0;
+    border-radius: var(--rounded-md);
+    justify-content: center;
+    text-align: center;
+    display: inline-flex;
+    white-space: normal;
+    word-break: break-word;
+    overflow: hidden;
+  }
+
+  .contact-info, .contact-form {
+    min-width: unset;
+    width: 95%; /* Ocupa quase toda a largura */
+  }
+
+  /* Specific styles for card overlays on mobile/tablet */
+  .certification-card,
+  .portfolio-card {
+    display: flex;
+    flex-direction: column; /* Stack image and content */
+    height: auto; /* Adjust height based on content */
+  }
+
+  .cert-image,
+  .portfolio-image {
+    height: 160px; /* Fixed image height for mobile cards */
+    overflow: hidden; /* Ensure image fits */
+  }
+
+  .cert-image-hover:hover img {
+    transform: none; /* Disable zoom on hover for mobile */
+  }
+
   .cert-overlay {
-    display: none !important; /* Esconde overlay no grid estilo Instagram */
+    position: static; /* Overlay becomes part of the flow */
+    opacity: 1; /* Always visible on mobile */
+    background-color: var(--gray-800); /* Background for the content area */
+    padding: var(--space-4); /* Increased padding for more breathing room */
+    text-align: center;
+    height: auto; /* Height adjusts to content */
+    display: flex; /* Flex for description and button */
+    flex-direction: column;
+    justify-content: center; /* Center content vertically if space allows */
+    align-items: center; /* Center content horizontally */
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); /* Small inner shadow for separation */
   }
+
+  .cert-image-hover:hover .cert-overlay {
+    opacity: 1; /* No change on hover for mobile */
+  }
+
+  .cert-overlay .cert-desc {
+    /* Re-introducing line-clamp for compactness on the card */
+    -webkit-line-clamp: 2; /* Limit to 2 lines for compactness */
+    display: -webkit-box; /* Enable flexbox for line-clamp */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ellipsis if truncated */
+    font-size: 0.9rem;
+    margin-bottom: var(--space-2);
+    color: var(--gray-300);
+  }
+
+  .cert-overlay .cert-read-more {
+    margin-top: var(--space-2); /* Spacing for the button */
+    font-size: 0.85rem;
+    padding: var(--space-1) var(--space-3);
+  }
+
+  .cert-info {
+    /* Removed padding-top here as overlay is now above it */
+    padding: var(--space-4); /* Consistent padding for the info section */
+    text-align: center;
+    background-color: var(--gray-800); /* Ensure background is consistent */
+  }
+
+  .cert-info .cert-title {
+    font-size: 1.25rem; /* Slightly reduced for compactness */
+    margin-bottom: var(--space-2); /* Adjusted */
+  }
+  .cert-info .cert-date {
+    font-size: 0.75rem; /* Slightly reduced for compactness */
+    margin-bottom: var(--space-3); /* Adjusted */
+  }
+  .cert_info .cert-icon {
+    font-size: 1.6rem; /* Slightly reduced */
+    margin-bottom: var(--space-2);
+  }
+  .cert-info .cert-tags {
+    margin-top: var(--space-2);
+    gap: var(--space-1); /* Smaller gap for tags */
+  }
+  .cert-info .tech-tag {
+    font-size: 0.7rem; /* Smaller tags */
+    padding: var(--space-1) var(--space-2);
+  }
+
+  /* Modal Adjustments for mobile (768px breakpoint) */
+  .cert-modal-content {
+    padding: var(--space-4);
+    max-width: 98vw; /* Ajusta para ocupar quase toda a largura da tela */
+    width: 98vw;
+    box-sizing: border-box;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    border-radius: var(--rounded-md);
+    /* ...existing code... */
+  }
+
+  /* Landscape orientation for tablets and larger phones */
+  @media (orientation: landscape) {
+    .cert-modal-content {
+      max-width: 70%; /* Mais largo em paisagem, como desktop */
+      max-height: 80vh; /* Mais curto para caber na tela paisagem */
+    }
+    .cert-modal-img {
+      max-height: 120px; /* Imagem ainda menor em paisagem */
+    }
+    .cert-modal-title {
+      font-size: 1.3rem; /* Título um pouco maior em paisagem */
+    }
+    .cert-modal_desc {
+      font-size: 0.9rem; /* Descrição um pouco maior em paisagem */
+    }
+  }
+}
+
+/* ----------- LARGAS (WIDESCREEN) ----------- */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+  .hero-container {
+    max-width: 1400px;
+    gap: var(--space-24);
+  }
+  .certifications-grid,
+  .portfolio-grid {
+    gap: var(--space-8);
+  }
+  .certification-card,
+  .portfolio-card {
+    width: 340px;
+    min-width: 340px;
+  }
+  .cert-image,
+  .portfolio-image {
+    height: 260px;
+    max-height: 280px;
+  }
+}
+
+/* ----------- DESKTOP PADRÃO ----------- */
+@media (min-width: 1025px) and (max-width: 1439px) {
+  .container {
+    max-width: 1200px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .hero-container {
+    max-width: 1200px;
+    gap: var(--space-16);
+  }
+  .certification-card,
+  .portfolio-card {
+    width: 300px;
+    min-width: 300px;
+  }
+  .cert-image,
+  .portfolio-image {
+    height: 220px;
+    max-height: 240px;
+  }
+}
+
+/* ----------- TABLET ----------- */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    max-width: 980px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .hero-container {
+    max-width: 980px;
+    gap: var(--space-10);
+  }
+  .certification-card,
+  .portfolio-card {
+    width: 240px;
+    min-width: 240px;
+  }
+  .cert-image,
+  .portfolio-image {
+    height: 160px;
+    max-height: 180px;
+  }
+  .skills-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  }
+}
+
+/* ----------- MOBILE GRANDE ----------- */
+@media (min-width: 481px) and (max-width: 768px) {
+  .container {
+    max-width: 98vw;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .hero-container {
+    max-width: 98vw;
+    gap: var(--space-6);
+  }
+  .certification-card,
+  .portfolio-card {
+    width: 98vw;
+    min-width: 0;
+  }
+  .cert-image,
+  .portfolio-image {
+    height: 140px;
+    max-height: 160px;
+  }
+  .skills-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
+}
+
+/* ----------- MOBILE PEQUENO / INSTAGRAM GRID ----------- */
+@media (max-width: 480px) {
+  .container {
+    max-width: 100vw;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .hero-container {
+    max-width: 100vw;
+    gap: var(--space-2);
+  }
+  .certification-card,
+  .portfolio-card {
+    width: 100%;
+    min-width: 0;
+  }
+  .cert-image,
+  .portfolio-image {
+    height: 100px;
+    max-height: 110px;
+  }
+  .skills-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+}
+
+/* ----------- AJUSTES GERAIS PARA IMAGENS E GRID ----------- */
+.cert-image,
+.portfolio-image {
+  /* Garante que o tamanho seja sempre 100% do card */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  /* ...existing code... */
+}
+.cert-image img,
+.portfolio-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* ...existing code... */
+}
+
+/* ...existing code... */

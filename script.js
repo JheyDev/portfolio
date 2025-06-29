@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextBtn.addEventListener('click', () => {
-      // Ajuste o valor de rolagem conforme a largura do seu card + gap
+      // Ajuste o valor de rolagem conforme a largura do seu card + gap (24px)
       certificationsCarousel.scrollBy({
         left: 324, // Largura do card (300px) + gap (24px)
         behavior: 'smooth'
@@ -73,6 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Lógica de "Ver Mais" em Overlays e Modal
 document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('cert-modal');
+  if (!modal) return; // Garante que só executa se o modal existir
+
   const modalImg = modal.querySelector('.cert-modal-img');
   const modalTitle = modal.querySelector('.cert-modal-title');
   const modalDesc = modal.querySelector('.cert-modal-desc');
@@ -84,71 +86,151 @@ document.addEventListener('DOMContentLoaded', () => {
   // Seleciona todos os botões "Ver mais" e adiciona o event listener
   document.querySelectorAll('.cert-read-more').forEach(button => {
     button.addEventListener('click', function(event) {
-      // Previne que o clique propague para o elemento pai (o card inteiro), se houver um listener lá
-      event.stopPropagation(); 
+      event.stopPropagation();
 
       const img = this.getAttribute('data-img');
       const title = this.getAttribute('data-title');
       const desc = this.getAttribute('data-desc');
-      const link = this.getAttribute('data-link'); // Link para certificados
-      const githubLink = this.getAttribute('data-github-link'); // Link para GitHub
-      const canvaLink = this.getAttribute('data-canva-link'); // Link para Canva
+      const link = this.getAttribute('data-link');
+      const githubLink = this.getAttribute('data-github-link');
+      const canvaLink = this.getAttribute('data-canva-link');
 
-      modalImg.src = img;
-      modalTitle.textContent = title;
-      modalDesc.textContent = desc;
+      if (modalImg) modalImg.src = img;
+      if (modalTitle) modalTitle.textContent = title;
+      if (modalDesc) modalDesc.textContent = desc;
 
       // Reseta a visibilidade de todos os botões de link
-      certLinkBtn.style.display = 'none';
-      githubLinkBtn.style.display = 'none';
-      canvaLinkBtn.style.display = 'none';
+      if (certLinkBtn) certLinkBtn.style.display = 'none';
+      if (githubLinkBtn) githubLinkBtn.style.display = 'none';
+      if (canvaLinkBtn) canvaLinkBtn.style.display = 'none';
 
       // Lógica condicional para exibir os botões corretos
-      if (link) { // Se for um certificado
+      if (link && certLinkBtn) {
         certLinkBtn.href = link;
-        certLinkBtn.innerHTML = 'Ver Certificação <i class="fas fa-external-link-alt"></i>'; // Garante o texto e o ícone
-        certLinkBtn.style.display = 'inline-flex'; // Exibe o botão de certificação
-      } else if (githubLink || canvaLink) { // Se for um projeto (com link GitHub ou Canva)
-        if (githubLink) {
+        certLinkBtn.innerHTML = 'Ver Certificação <i class="fas fa-external-link-alt"></i>';
+        certLinkBtn.style.display = 'inline-flex';
+      } else {
+        if (githubLink && githubLinkBtn) {
           githubLinkBtn.href = githubLink;
           githubLinkBtn.style.display = 'inline-flex';
         }
-        if (canvaLink) {
+        if (canvaLink && canvaLinkBtn) {
           canvaLinkBtn.href = canvaLink;
           canvaLinkBtn.style.display = 'inline-flex';
         }
       }
 
-      modal.classList.add('active'); // Mostra o modal
+      modal.classList.add('active');
     });
   });
 
-  // Fecha o modal ao clicar no 'x'
-  modalClose.addEventListener('click', () => {
-    modal.classList.remove('active');
-  });
+  if (modalClose) {
+    modalClose.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+  }
 
-  // Fecha o modal ao clicar fora da área de conteúdo (aprimorado)
+  // Fecha o modal ao clicar fora da área de conteúdo
   window.addEventListener('click', (event) => {
     if (event.target === modal) {
       modal.classList.remove('active');
     }
   });
 
-  // Previne rolagem da página quando o modal estiver ativo
-  window.addEventListener('keydown', (e) => { // Adicionado para fechar com 'Esc'
+  // Fecha com 'Esc'
+  window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.classList.contains('active')) {
       modal.classList.remove('active');
     }
   });
 
+  // Previne rolagem da página quando o modal estiver ativo
   modal.addEventListener('wheel', (e) => {
     if (modal.classList.contains('active')) {
       e.preventDefault();
     }
   }, { passive: false });
-});
 
+  // Garante que o clique na imagem do certificado/projeto abre a modal no mobile, mesmo sem overlay visível
+  const isMobileOrTablet = window.matchMedia('(max-width: 768px)').matches;
+
+  document.querySelectorAll('.cert-image-hover, .portfolio-image').forEach(imageWrapper => {
+    // Adicione checagem de existência do overlay e descSpan
+    const overlay = imageWrapper.querySelector('.cert-overlay');
+    if (!overlay) return; // Se não existe overlay, não faz nada
+
+    const descSpan = overlay.querySelector('.cert-desc');
+    const readMoreBtn = overlay.querySelector('.cert-read-more');
+
+    if (isMobileOrTablet) {
+      // Em mobile/tablet, o overlay deve estar sempre visível
+      overlay.style.opacity = '1';
+      overlay.style.position = 'static'; // Altera de absolute para static para fluir no documento
+      overlay.style.display = 'flex'; // Garante que o conteúdo dentro do overlay seja flex
+
+      // Garante que o botão "Ver Mais" esteja sempre visível e com display correto
+      if (readMoreBtn) {
+        readMoreBtn.style.display = 'inline-block';
+      }
+      
+      // Ajusta a descrição para não truncar excessivamente no card, se o CSS permitir mais linhas
+      if (descSpan) {
+        const fullText = descSpan.getAttribute('data-full') || descSpan.textContent.trim();
+        descSpan.textContent = fullText; // Mostra o texto completo no card para mobile, se couber
+      }
+
+      // Adiciona um listener de clique no próprio wrapper do card para abrir o modal
+      // Isso é para o caso de a imagem ou outra parte do card ser clicada para abrir o modal,
+      // já que o overlay está sempre visível e não precisa de hover.
+      imageWrapper.addEventListener('click', function(e) {
+        if (e.target.classList.contains('cert-read-more')) return;
+        const buttonToClick = this.querySelector('.cert-read-more');
+        if (buttonToClick) {
+          buttonToClick.click();
+        }
+      });
+    } else {
+      // Lógica para Desktop (comportamento de hover)
+      // Certifique-se de que a opacidade e posição inicial sejam zero para o efeito de hover
+      overlay.style.opacity = '0';
+      overlay.style.position = 'absolute';
+      overlay.style.display = 'flex';
+
+      imageWrapper.addEventListener('mouseenter', () => {
+        overlay.style.opacity = '1';
+      });
+      imageWrapper.addEventListener('mouseleave', () => {
+        overlay.style.opacity = '0';
+      });
+
+      if (descSpan) {
+        const fullText = descSpan.getAttribute('data-full') || descSpan.textContent.trim();
+        if (fullText.length > 50) {
+          descSpan.textContent = fullText.slice(0, 50) + '...';
+        } else {
+          descSpan.textContent = fullText;
+        }
+      }
+      if (readMoreBtn) {
+        readMoreBtn.style.display = 'inline-block';
+      }
+
+      // Permite abrir a modal ao clicar no card no desktop, mas só se o overlay estiver visível (em hover)
+      imageWrapper.addEventListener('click', function(e) {
+        // Se clicar no botão, deixa o botão agir normalmente
+        if (e.target.classList.contains('cert-read-more')) return;
+        // Só abre a modal se o overlay estiver visível (em hover)
+        if (overlay.style.opacity === '1') {
+          const buttonToClick = this.querySelector('.cert-read-more');
+          if (buttonToClick) {
+            buttonToClick.click();
+          }
+        }
+      });
+    }
+  });
+
+});
 
 // Lógica para alternar categorias e subcategorias do Portfólio
 document.addEventListener('DOMContentLoaded', () => {
@@ -239,7 +321,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const isMobileOrTablet = window.matchMedia('(max-width: 768px)').matches;
 
   document.querySelectorAll('.cert-image-hover, .portfolio-image').forEach(imageWrapper => {
+    // Adicione checagem de existência do overlay e descSpan
     const overlay = imageWrapper.querySelector('.cert-overlay');
+    if (!overlay) return; // Se não existe overlay, não faz nada
+
     const descSpan = overlay.querySelector('.cert-desc');
     const readMoreBtn = overlay.querySelector('.cert-read-more');
 
@@ -255,25 +340,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Ajusta a descrição para não truncar excessivamente no card, se o CSS permitir mais linhas
-      const fullText = descSpan.getAttribute('data-full') || descSpan.textContent.trim();
-      descSpan.textContent = fullText; // Mostra o texto completo no card para mobile, se couber
+      if (descSpan) {
+        const fullText = descSpan.getAttribute('data-full') || descSpan.textContent.trim();
+        descSpan.textContent = fullText; // Mostra o texto completo no card para mobile, se couber
+      }
 
       // Adiciona um listener de clique no próprio wrapper do card para abrir o modal
       // Isso é para o caso de a imagem ou outra parte do card ser clicada para abrir o modal,
       // já que o overlay está sempre visível e não precisa de hover.
-      imageWrapper.addEventListener('click', function() {
+      imageWrapper.addEventListener('click', function(e) {
+        if (e.target.classList.contains('cert-read-more')) return;
         const buttonToClick = this.querySelector('.cert-read-more');
         if (buttonToClick) {
-          buttonToClick.click(); // Simula o clique no botão "Ver mais" para abrir o modal
+          buttonToClick.click();
         }
       });
-
     } else {
       // Lógica para Desktop (comportamento de hover)
       // Certifique-se de que a opacidade e posição inicial sejam zero para o efeito de hover
       overlay.style.opacity = '0';
-      overlay.style.position = 'absolute'; // Volta para absolute para o hover
-      overlay.style.display = 'flex'; // Mantém flex para centralização
+      overlay.style.position = 'absolute';
+      overlay.style.display = 'flex';
 
       imageWrapper.addEventListener('mouseenter', () => {
         overlay.style.opacity = '1';
@@ -282,16 +369,31 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.style.opacity = '0';
       });
 
-      // Trunca o texto se for muito longo para o display inicial no hover
-      const fullText = descSpan.getAttribute('data-full') || descSpan.textContent.trim();
-      if (fullText.length > 50) {
-        descSpan.textContent = fullText.slice(0, 50) + '...';
-      } else {
-        descSpan.textContent = fullText;
+      if (descSpan) {
+        const fullText = descSpan.getAttribute('data-full') || descSpan.textContent.trim();
+        // Trunca o texto se for muito longo para o display inicial no hover
+        if (fullText.length > 50) {
+          descSpan.textContent = fullText.slice(0, 50) + '...';
+        } else {
+          descSpan.textContent = fullText;
+        }
       }
-       if (readMoreBtn) {
+      if (readMoreBtn) {
         readMoreBtn.style.display = 'inline-block'; // Sempre visível no hover desktop
       }
+
+      // Permite abrir a modal ao clicar no card no desktop, mas só se o overlay estiver visível (em hover)
+      imageWrapper.addEventListener('click', function(e) {
+        // Se clicar no botão, deixa o botão agir normalmente
+        if (e.target.classList.contains('cert-read-more')) return;
+        // Só abre a modal se o overlay estiver visível (em hover)
+        if (overlay.style.opacity === '1') {
+          const buttonToClick = this.querySelector('.cert-read-more');
+          if (buttonToClick) {
+            buttonToClick.click();
+          }
+        }
+      });
     }
   });
 

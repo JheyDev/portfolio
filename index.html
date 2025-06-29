@@ -130,12 +130,17 @@
               <div class="certifications-grid">
                 <div class="certification-card">
                   <div class="cert-image cert-image-hover">
-                    <img src="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&w=120&h=120&fit=crop" alt="HTML5 Avançado">
+                    <img src="assets/images/Prompts Inteligentes.jpg" alt="HTML5 Avançado">
                     <div class="cert-overlay">
                       <span class="cert-desc">
-                        Estruturação semântica e acessibilidade web
+                        Prompts inteligentes com IA
                       </span>
-                      <button class="cert-read-more" data-img="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&w=600&h=400&fit=crop" data-title="Certificação HTML5 Avançado" data-desc="Estruturação semântica e acessibilidade web" data-link="https://www.alura.com.br/certificado/html5-avancado">Ver mais</button>
+                      <button class="cert-read-more"
+                        data-img="assets/images/Prompts Inteligentes.jpg"
+                        data-title="Certificação HTML5 Avançado"
+                        data-desc="Estruturação semântica e acessibilidade web"
+                        data-link="https://www.alura.com.br/certificado/html5-avancado"
+                      >Ver mais</button>
                     </div>
                   </div>
                   <div class="cert-info">
@@ -1638,20 +1643,16 @@
                 <a href="https://www.instagram.com/seuinstagram/" target="_blank" rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
               </div>
             </div>
-            <form class="contact-form" action="your-server-endpoint" method="POST">
+            <form class="contact-form" id="whatsapp-form">
               <div class="form-group">
                 <label for="name">Nome:</label>
                 <input type="text" id="name" name="name" required />
               </div>
               <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required />
-              </div>
-              <div class="form-group">
                 <label for="message">Mensagem:</label>
                 <textarea id="message" name="message" rows="5" required></textarea>
               </div>
-              <button type="submit" class="btn btn-primary">Enviar Mensagem</button>
+              <button type="button" class="btn btn-primary" id="whatsapp-send-btn">Enviar Mensagem</button>
             </form>
           </div>
         </div>
@@ -1660,13 +1661,9 @@
 
     <footer class="footer">
       <div class="container">
-        <p>&copy; 2025 JheyArt. Todos os direitos reservados.</p>
-        <div class="footer-links">
-          <a href="#inicio">Início</a>
-          <a href="#sobre">Sobre</a>
-          <a href="#portfolio">Portfólio</a>
-          <a href="#contato">Contato</a>
-        </div>
+        <p class="footer-signature">
+          Feito com <span class="heart-pulse">&hearts;</span> JheyArt | 2025
+        </p>
       </div>
     </footer>
 
@@ -1696,5 +1693,20 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+      // WhatsApp envio direto
+      document.getElementById('whatsapp-send-btn').onclick = function() {
+        var name = document.getElementById('name').value.trim();
+        var message = document.getElementById('message').value.trim();
+        if (!name || !message) {
+          alert('Por favor, preencha seu nome e a mensagem.');
+          return;
+        }
+        var text = `Olá, meu nome é ${name}.%0A${encodeURIComponent(message)}`;
+        var phone = '5541996808150'; // Seu número com DDI e DDD
+        var url = `https://wa.me/${phone}?text=${text}`;
+        window.open(url, '_blank');
+      };
+    </script>
   </body>
 </html>
